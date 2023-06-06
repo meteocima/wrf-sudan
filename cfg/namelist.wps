@@ -1,0 +1,81 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '$dateBeg', 
+ end_date   = '$dateEnd', 
+ interval_seconds = 21600,
+ io_form_geogrid = 2,
+ opt_output_from_geogrid_path = '.',
+ debug_level = 0,
+/
+
+&geogrid
+ parent_id         = 1,
+ parent_grid_ratio = 1,
+ i_parent_start    = 1,
+ j_parent_start    = 1,
+ e_we          = 268,
+ e_sn          = 234,
+ geog_data_res = '30s',
+ dx = 7500,
+ dy = 7500,
+ map_proj =  'mercator',
+ ref_lat   = 16.318,
+ ref_lon   = 29.846,
+ truelat1  = 16.318,
+ truelat2  = 0,
+ stand_lon = 29.846,
+ geog_data_path = '~/wrf-sudan/geog',
+ opt_geogrid_tbl_path = '.',
+ ref_x = 134.0,
+ ref_y = 117.0,
+/
+
+&ungrib
+ out_format = 'WPS',
+ prefix = 'FILE',
+/
+
+&metgrid
+ fg_name = 'FILE',
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path = '.',
+ opt_metgrid_tbl_path = '~/wrf-sudan/prg/WPS/metgrid',
+/
+
+&mod_levs
+ press_pa = 201300 , 200100 , 100000 ,
+             95000 ,  90000 ,
+             85000 ,  80000 ,
+             75000 ,  70000 ,
+             65000 ,  60000 ,
+             55000 ,  50000 ,
+             45000 ,  40000 ,
+             35000 ,  30000 ,
+             25000 ,  20000 ,
+             15000 ,  10000 ,
+              5000 ,   1000
+ /
+
+
+&domain_wizard
+ grib_data_path = '??',
+ grib_vtable = 'null',
+ dwiz_name    =sma_domain
+ dwiz_desc    =
+ dwiz_user_rect_x1 =2255
+ dwiz_user_rect_y1 =741
+ dwiz_user_rect_x2 =2468
+ dwiz_user_rect_y2 =917
+ dwiz_show_political =true
+ dwiz_center_over_gmt =true
+ dwiz_latlon_space_in_deg =10
+ dwiz_latlon_linecolor =-8355712
+ dwiz_map_scale_pct =25.0
+ dwiz_map_vert_scrollbar_pos =516
+ dwiz_map_horiz_scrollbar_pos =1504
+ dwiz_gridpt_dist_km =7.5
+ dwiz_mpi_command =null
+ dwiz_tcvitals =null
+ dwiz_bigmap =Y
+/
