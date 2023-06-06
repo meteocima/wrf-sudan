@@ -50,12 +50,14 @@ ulimit -s unlimited
 # echo LOCAL_PATH=$LOCAL_PATH
 # exit 0
 
+echo Build WPS workdir
+
 rm -rf $WPS_WORKDIR
 rm -rf $WRF_WORKDIR
-#rm -rf $GFS_DIR
+rm -rf $GFS_DIR
 mkdir -p $WPS_WORKDIR
 mkdir -p $WRF_WORKDIR
-#mkdir -p $GFS_DIR
+mkdir -p $GFS_DIR
 
 NML_WPS=$WPS_WORKDIR/namelist.wps
 NML_WRF=$WPS_WORKDIR/namelist.input
@@ -71,10 +73,9 @@ sed -i 's@$dateEndY@'"$DT_END_YEAR"'@g' $NML_WRF
 sed -i 's@$dateEndM@'"$DT_END_MONTH"'@g' $NML_WRF
 sed -i 's@$dateEndD@'"$DT_END_DAY"'@g' $NML_WRF
 
-
 DT_FORE=$DT_BEG_YEAR$DT_BEG_MONTH$DT_BEG_DAY
-#rm $GFS_DIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000/sudan/*
-#$SUDAN_HOME/bin/gfsdn -c $SUDAN_HOME/cfg/gfs.toml -o $SUDAN_HOME/gfs sudan 72 ${DT_FORE}00 &
+echo download gfs. log in gfs.log
+$SUDAN_HOME/bin/gfsdn -c $SUDAN_HOME/cfg/gfs.toml -o $SUDAN_HOME/gfs sudan 72 ${DT_FORE}00 > gfs.log 2>&1 &
 cd $WPS_WORKDIR
 
 ln -s $WPS_HOME/*.exe .
@@ -82,29 +83,25 @@ ln -s $WPS_HOME/util/avg_tsfc.exe .
 ln -s $WPS_HOME/ungrib/Variable_Tables/Vtable.GFS Vtable
 ln -s $WRF_HOME/run/real.exe .
 
-
-mpiexec -n 36 ./geogrid.exe &
+echo run geogrid. log in geogrid.log
+mpiexec -n 36 ./geogrid.exe > geogrid.log 2>&1 &
 
 wait
 
 $WPS_HOME/link_grib.csh $GFS_DIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000/sudan/*
 
-./ungrib.exe
-./avg_tsfc.exe
+echo run ungrib. log in ungrib.log
+./ungrib.exe > ungrib.log 2>&1
+echo run avg_tsfc. log in avg_tsfc.log
+./avg_tsfc.exe > avg_tsfc.log 2>&1
 
-n=1
-until [ $n -gt 2 ]; do
-   echo RUNNING METGRID. ATTEMPT $n of 2
-   mpiexec -n 24 ./metgrid.exe && break
-   ((n++))
-done
+echo run metgrid. log in metgrid.log
+mpiexec -n 24 ./metgrid.exe > metgrid.log 2>&1 
 
-n=1
-until [ $n -gt 2 ]; do
-   echo RUNNING REAL. ATTEMPT $n of 2
-   mpiexec -n 24 ./real.exe && break
-   ((n++))
-done
+echo run real. log in real.log
+mpiexec -n 24 ./real.exe > real.log 2>&1  
+
+echo build WRF workdir. 
 
 # UPLOAD NAMELIST E CONDITIONS
 cp wrf[bi]* namelist.input $WRF_WORKDIR
@@ -122,7 +119,10 @@ ln -s $WRF_HOME/run/VEGPARM.TBL .
 ln -s $WRF_HOME/run/SOILPARM.TBL .
 ln -s $WRF_HOME/run/GENPARM.TBL .
 
-mpirun -n 128 ./wrf.exe
+echo run WRF. log in wrf.log
+mpirun -n 128 ./wrf.exe > wrf.log 2>&1  
+
+cd $WRF_WORKDIR
 
 RH_EXPR="RH2=100*(PSFC*Q2/0.622)/(611.2*exp(17.67*(T2-273.15)/((T2-273.15)+243.5)))"
 RAINSUM_EXPR="RAINSUM=RAINNC+RAINC"
@@ -130,36 +130,38 @@ RAINSUM_EXPR="RAINSUM=RAINNC+RAINC"
 rm -rf $RESULT_DIR
 mkdir -p $RESULT_DIR
 
+echo Postprocess. log in postprocess.log
+
 echo Fix date time
 for f in $WRF_WORKDIR/auxhist23_d01_*; do
    date=$(basename $f | cut -c 15-24)
    time=$(basename $f | cut -c 26-34)
    echo Fixing time for $(basename $f)
-   cdo -b F64 -O settaxis,$date,$time $f $(basename ${f}).fixdate
+   cdo -b F64 -O settaxis,$date,$time $f $(basename ${f}).fixdate >> postprocess.log 2>&1
 done
 
 echo Merge hourly files into a single one
-cdo -O -v mergetime *.fixdate sudan-dtfrm.nc
-cdo -O -setreftime,'2000-01-01','00:00:00' sudan-dtfrm.nc sudan.nc
+cdo -O -v mergetime *.fixdate sudan-dtfrm.nc >> postprocess.log 2>&1
+cdo -O -setreftime,'2000-01-01','00:00:00' sudan-dtfrm.nc sudan.nc >> postprocess.log 2>&1
 
 echo Remove wrong variables
-ncks -O -x -v P_PL,C1H,C2H,C3H,C4H,C1F,C2F,C3F,C4F,GHT_PL,Q_PL,RH_PL,S_PL,TD_PL,T_PL,U_PL,V_PL,EMISS,GLW,GRDFLX,HFX,UST,ZNT sudan.nc clean-sudan.nc
+ncks -O -x -v P_PL,C1H,C2H,C3H,C4H,C1F,C2F,C3F,C4F,GHT_PL,Q_PL,RH_PL,S_PL,TD_PL,T_PL,U_PL,V_PL,EMISS,GLW,GRDFLX,HFX,UST,ZNT sudan.nc clean-sudan.nc >> postprocess.log 2>&1
 
 echo Regridding
-cdo -O remapbil,/data/safe/wrfita/bin/cdo_wrfita-d03_grid_25.txt clean-sudan.nc rg-sudan.nc
+cdo -O remapbil,$SUDAN_HOME/cfg/cdo_wrfsudan_d01_grid.txt clean-sudan.nc rg-sudan.nc >> postprocess.log 2>&1
 
 echo Calculating RH_EXPR
-cdo -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RH_EXPR rg-sudan.nc rh-sudan.nc
+cdo -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RH_EXPR rg-sudan.nc rh-sudan.nc >> postprocess.log 2>&1
 
 echo Calculating RAINSUM_EXPR
-cdo -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RAINSUM_EXPR rg-sudan.nc rainsum-sudan.nc
+cdo -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RAINSUM_EXPR rg-sudan.nc rainsum-sudan.nc >> postprocess.log 2>&1
 
 echo Merging new variables with main file
-cdo -O -v -f nc4c -z zip9 merge rg-sudan.nc rainsum-sudan.nc rh-sudan.nc $RESULT_DIR/sudan-d01-${DT_BEG}UTC.nc
+cdo -O -v -f nc4c -z zip9 merge rg-sudan.nc rainsum-sudan.nc rh-sudan.nc $RESULT_DIR/sudan-d01-${DT_BEG}UTC.nc >> postprocess.log 2>&1
 
 echo Uploading to Dewetra
-ssh -i ~/.ssh/id_rsa.dewetra $REMOTE_SERVER mkdir -p $REMOTE_PATH
-scp -i ~/.ssh/id_rsa.antonio $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp
-ssh -i ~/.ssh/id_rsa.antonio $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME
+#ssh -i ~/.ssh/id_rsa.dewetra $REMOTE_SERVER mkdir -p $REMOTE_PATH
+#scp -i ~/.ssh/id_rsa.antonio $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp
+#ssh -i ~/.ssh/id_rsa.antonio $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME
 
 echo Done
