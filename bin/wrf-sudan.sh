@@ -1,23 +1,23 @@
 #!/bin/bash
 
-SUDAN_HOME=~/wrf-sudan
+SUDAN_HOME=~/repos/wrf-sudan
 GFS_DIR=$SUDAN_HOME/gfs/
 WPS_HOME=$SUDAN_HOME/prg/WPS
 WRF_HOME=$SUDAN_HOME/prg/WRF
 RESULT_DIR=$SUDAN_HOME/results
 WPS_WORKDIR=$SUDAN_HOME/workdir/wps
 WRF_WORKDIR=$SUDAN_HOME/workdir/wrf
-
-DT_BEG=$(date -u -d +"%Y-%m-%d_00:00:00")
+#
+DT_BEG=$(date -u +"%Y-%m-%d_00:00:00")
 DT_BEG_YEAR=${DT_BEG:0:4}
 DT_BEG_MONTH=${DT_BEG:5:2}
 DT_BEG_DAY=${DT_BEG:8:2}
-
+#
 DT_END=$(date -u -d "+ 3 days" +"%Y-%m-%d_00:00:00")
 DT_END_YEAR=${DT_END:0:4}
 DT_END_MONTH=${DT_END:5:2}
 DT_END_DAY=${DT_END:8:2}
-
+#
 REMOTE_SERVER=wrfprod@130.251.104.19
 REMOTE_BASEDIR=/share/archivio/experience/data/MeteoModels/SUDAN
 REMOTE_PATH=$REMOTE_BASEDIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000
@@ -28,12 +28,34 @@ export LD_LIBRARY_PATH=$SUDAN_HOME/lib:$LD_LIBRARY_PATH
 export PATH=$SUDAN_HOME/bin:$PATH
 ulimit -s unlimited
 
+# echo SUDAN_HOME=$SUDAN_HOME
+# echo GFS_DIR=$GFS_DIR
+# echo WPS_HOME=$WPS_HOME
+# echo WRF_HOME=$WRF_HOME
+# echo RESULT_DIR=$RESULT_DIR
+# echo WPS_WORKDIR=$WPS_WORKDIR
+# echo WRF_WORKDIR=$WRF_WORKDIR
+# echo DT_BEG=$DT_BEG
+# echo DT_BEG_YEAR=$DT_BEG_YEAR
+# echo DT_BEG_MONTH=$DT_BEG_MONTH
+# echo DT_BEG_DAY=$DT_BEG_DAY
+# echo DT_END=$DT_END
+# echo DT_END_YEAR=$DT_END_YEAR
+# echo DT_END_MONTH=$DT_END_MONTH
+# echo DT_END_DAY=$DT_END_DAY
+# echo REMOTE_SERVER=$REMOTE_SERVER
+# echo REMOTE_BASEDIR=$REMOTE_BASEDIR
+# echo REMOTE_PATH=$REMOTE_PATH
+# echo FILE_NAME=$FILE_NAME
+# echo LOCAL_PATH=$LOCAL_PATH
+# exit 0
+
 rm -rf $WPS_WORKDIR
 rm -rf $WRF_WORKDIR
-rm -rf $GFS_DIR
+#rm -rf $GFS_DIR
 mkdir -p $WPS_WORKDIR
 mkdir -p $WRF_WORKDIR
-mkdir -p $GFS_DIR
+#mkdir -p $GFS_DIR
 
 NML_WPS=$WPS_WORKDIR/namelist.wps
 NML_WRF=$WPS_WORKDIR/namelist.input
@@ -49,6 +71,10 @@ sed -i 's@$dateEndY@'"$DT_END_YEAR"'@g' $NML_WRF
 sed -i 's@$dateEndM@'"$DT_END_MONTH"'@g' $NML_WRF
 sed -i 's@$dateEndD@'"$DT_END_DAY"'@g' $NML_WRF
 
+
+DT_FORE=$DT_BEG_YEAR$DT_BEG_MONTH$DT_BEG_DAY
+#rm $GFS_DIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000/sudan/*
+#$SUDAN_HOME/bin/gfsdn -c $SUDAN_HOME/cfg/gfs.toml -o $SUDAN_HOME/gfs sudan 72 ${DT_FORE}00 &
 cd $WPS_WORKDIR
 
 ln -s $WPS_HOME/*.exe .
@@ -56,13 +82,12 @@ ln -s $WPS_HOME/util/avg_tsfc.exe .
 ln -s $WPS_HOME/ungrib/Variable_Tables/Vtable.GFS Vtable
 ln -s $WRF_HOME/run/real.exe .
 
-bin/gfsdn -c $SUDAN_HOME/cfg/gfs.toml -o $SUDAN_HOME/gfs sudan 72 ${DT_BEG:0:10}00 &
 
 mpiexec -n 36 ./geogrid.exe &
 
 wait
 
-$WPS_HOME/link_grib.csh $GFS_DIR/0000/sudan/*
+$WPS_HOME/link_grib.csh $GFS_DIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000/sudan/*
 
 ./ungrib.exe
 ./avg_tsfc.exe

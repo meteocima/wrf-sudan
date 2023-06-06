@@ -18,6 +18,8 @@ end_second               = 00,
 interval_seconds         = 21600,
 input_from_file          = .true.,
 history_interval         = 60,
+auxhist3_interval        = 60,
+auxhist23_interval       = 60
 frames_per_outfile       = 1000,
 restart                  = .false.,
 restart_interval         = 5000,
@@ -27,10 +29,8 @@ io_form_input            = 2,
 io_form_boundary         = 2,
 debug_level              = 0,
 output_diagnostics       = 1
-auxhist3_outname         = 'wrfxtrm_d<domain>_<date>'
-io_form_auxhist3         = 2
-auxhist3_interval        = 1440
-frames_per_auxhist3      = 10
+frames_per_auxhist23     = 1
+io_form_auxhist23        = 2,
 /
 
 &domains                 
