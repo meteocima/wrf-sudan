@@ -42,28 +42,6 @@ log Simulation starting.
 log '  ' \$SUDAN_HOME=$SUDAN_HOME 
 log '  ' \$DT_FORECAST=$DT_FORECAST
 
-# echo SUDAN_HOME=$SUDAN_HOME
-# echo GFS_DIR=$GFS_DIR
-# echo WPS_HOME=$WPS_HOME
-# echo WRF_HOME=$WRF_HOME
-# echo RESULT_DIR=$RESULT_DIR
-# echo WPS_WORKDIR=$WPS_WORKDIR
-# echo WRF_WORKDIR=$WRF_WORKDIR
-# echo DT_BEG=$DT_BEG
-# echo DT_BEG_YEAR=$DT_BEG_YEAR
-# echo DT_BEG_MONTH=$DT_BEG_MONTH
-# echo DT_BEG_DAY=$DT_BEG_DAY
-# echo DT_END=$DT_END
-# echo DT_END_YEAR=$DT_END_YEAR
-# echo DT_END_MONTH=$DT_END_MONTH
-# echo DT_END_DAY=$DT_END_DAY
-# echo REMOTE_SERVER=$REMOTE_SERVER
-# echo REMOTE_BASEDIR=$REMOTE_BASEDIR
-# echo REMOTE_PATH=$REMOTE_PATH
-# echo FILE_NAME=$FILE_NAME
-# echo LOCAL_PATH=$LOCAL_PATH
-# exit 0
-
 log Build WPS workdir
 
 rm -rf $WPS_WORKDIR
@@ -175,8 +153,8 @@ log Merging new variables with main file
 cdo -O -v -f nc4c -z zip9 merge rg-sudan.nc rainsum-sudan.nc rh-sudan.nc $RESULT_DIR/sudan-d01-${DT_BEG}UTC.nc >> postprocess.log 2>&1
 
 log Uploading to Dewetra
-#ssh -i ~/.ssh/id_rsa.dewetra $REMOTE_SERVER mkdir -p $REMOTE_PATH
-#scp -i ~/.ssh/id_rsa.antonio $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp
-#ssh -i ~/.ssh/id_rsa.antonio $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME
+ssh -i ~/.ssh/del-dewetra $REMOTE_SERVER mkdir -p $REMOTE_PATH
+scp -i ~/.ssh/del-dewetra $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp
+ssh -i ~/.ssh/del-dewetra $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME
 
 log Done
