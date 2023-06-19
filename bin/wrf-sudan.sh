@@ -43,9 +43,6 @@ log Simulation starting.
 log '  ' \$SUDAN_HOME=$SUDAN_HOME 
 log '  ' \$DT_FORECAST=$DT_FORECAST
 
-<< EOC
-
-
 log Build WPS workdir
 
 rm -rf $WPS_WORKDIR
@@ -119,10 +116,8 @@ ln -s $WRF_HOME/run/GENPARM.TBL .
 
 log Run WRF. Log file: \$SUDAN_HOME/workdir/wrf/wrf.log
 mpiexec --oversubscribe -n 128 ./wrf.exe > wrf.log 2>&1  
-EOC
 
 cd $WRF_WORKDIR
-
 
 function cdorun() {
    set +e
@@ -173,14 +168,14 @@ cdorun -O -v -f nc4c -z zip9 merge rg-sudan.nc rainsum-sudan.nc rh-sudan.nc $RES
 
 log Uploading to Dewetra
 
-PROXYCOMMAND="-o ProxyCommand='ssh -i /share/wrf/cfg/id_rsa.wrfprod -W %h:%p wrfprod@130.251.104.213'"
+PROXYCOMMAND="-o ProxyCommand='ssh -o StrictHostKeyChecking=no -i /share/wrf/cfg/id_rsa.wrfprod -W %h:%p wrfprod@130.251.104.213'"
 SSHKEY='-i /share/wrf/cfg/del-dewetra'
 REMOTE_SERVER=wrfprod@130.251.104.19
 REMOTE_BASEDIR=/share/archivio/experience/data/MeteoModels/SUDAN
 REMOTE_PATH=$REMOTE_BASEDIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000
 
-eval ssh $PROXYCOMMAND $SSHKEY $REMOTE_SERVER mkdir -p $REMOTE_PATH
-eval scp $PROXYCOMMAND $SSHKEY $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp
-eval ssh $PROXYCOMMAND $SSHKEY $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME
+eval ssh $PROXYCOMMAND $SSHKEY -o StrictHostKeyChecking=no $REMOTE_SERVER mkdir -p $REMOTE_PATH > /dev/null 2>&1
+eval scp $PROXYCOMMAND $SSHKEY -o StrictHostKeyChecking=no $LOCAL_PATH $REMOTE_SERVER:$REMOTE_PATH/$FILE_NAME.tmp > /dev/null 2>&1
+eval ssh $PROXYCOMMAND $SSHKEY -o StrictHostKeyChecking=no $REMOTE_SERVER mv $REMOTE_PATH/$FILE_NAME.tmp $REMOTE_PATH/$FILE_NAME > /dev/null 2>&1
 
 log Done
