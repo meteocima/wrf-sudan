@@ -25,8 +25,8 @@
  truelat1  = 16.318,
  truelat2  = 0,
  stand_lon = 29.846,
- geog_data_path = '/home/andrea.parodi/repos/wrf-sudan/geog',
- opt_geogrid_tbl_path = '/home/andrea.parodi/repos/wrf-sudan/prg/WPS/geogrid',
+ geog_data_path = '/share/wrf/geog',
+ opt_geogrid_tbl_path = '/share/wrf/prg/WPS/geogrid',
  ref_x = 134.0,
  ref_y = 117.0,
 /
@@ -40,7 +40,7 @@
  fg_name = 'FILE',
  io_form_metgrid = 2,
  opt_output_from_metgrid_path = '.',
- opt_metgrid_tbl_path = '/home/andrea.parodi/repos/wrf-sudan/prg/WPS/metgrid',
+ opt_metgrid_tbl_path = '/share/wrf/prg/WPS/metgrid',
 /
 
 &mod_levs
