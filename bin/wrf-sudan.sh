@@ -171,7 +171,7 @@ log Uploading to Dewetra
 PROXYCOMMAND="-o ProxyCommand='ssh -o StrictHostKeyChecking=no -i /share/wrf/cfg/id_rsa.wrfprod -W %h:%p wrfprod@130.251.104.213'"
 SSHKEY='-i /share/wrf/cfg/del-dewetra'
 REMOTE_SERVER=wrfprod@130.251.104.19
-REMOTE_BASEDIR=/share/archivio/experience/data/MeteoModels/SUDAN
+REMOTE_BASEDIR=/share/archivio/experience/data/MeteoModels/WRF-SUDAN
 REMOTE_PATH=$REMOTE_BASEDIR/$DT_BEG_YEAR/$DT_BEG_MONTH/$DT_BEG_DAY/0000
 
 eval ssh $PROXYCOMMAND $SSHKEY -o StrictHostKeyChecking=no $REMOTE_SERVER mkdir -p $REMOTE_PATH > /dev/null 2>&1
