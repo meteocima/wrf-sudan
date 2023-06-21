@@ -15,12 +15,12 @@ end_day                  = $dateEndD,
 end_hour                 = 00,
 end_minute               = 00,
 end_second               = 00,
-interval_seconds         = 21600,
+interval_seconds         = 10800,
 input_from_file          = .true.,
 history_interval         = 60,
-auxhist3_interval        = 60,
-auxhist23_interval       = 60
-frames_per_outfile       = 1000,
+auxhist3_interval        = 60
+auxhist23_interval       = 60,   
+frames_per_outfile       = 1,
 restart                  = .false.,
 restart_interval         = 5000,
 io_form_history          = 2,
@@ -28,9 +28,13 @@ io_form_restart          = 2,
 io_form_input            = 2,
 io_form_boundary         = 2,
 debug_level              = 0,
+nwp_diagnostics		     = 1,
+frames_per_auxhist23     = 1,
+io_form_auxhist23        = 2, 
 output_diagnostics       = 1
-frames_per_auxhist23     = 1
-io_form_auxhist23        = 2,
+auxhist3_outname         = 'wrfxtrm_d<domain>_<date>'
+io_form_auxhist3         = 2
+frames_per_auxhist3      = 1
 /
 
 &domains                 
@@ -56,8 +60,14 @@ feedback                 = 1,
 smooth_option            = 0,
 /
 
-&physics                 
-mp_physics               = 24,
+&diags
+p_lev_diags = 1,
+num_press_levels = 11,
+press_levels = 100000, 97500, 95000, 92500, 90000, 85000, 70000, 60000, 50000, 30000, 20000,  
+/
+
+&physics                
+mp_physics               = 14,
 ra_lw_physics            = 4,
 ra_sw_physics            = 4,
 radt                     = 30,
@@ -65,7 +75,7 @@ sf_sfclay_physics        = 1,
 sf_surface_physics       = 2,
 bl_pbl_physics           = 1,
 bldt                     = 0,
-cu_physics               = 2,
+cu_physics               = 14,
 cudt                     = 5,
 isfflx                   = 1,
 ifsnow                   = 0,
