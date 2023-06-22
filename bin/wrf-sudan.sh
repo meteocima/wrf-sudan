@@ -8,7 +8,8 @@ function log() {
 }
  
 SUDAN_HOME=/share/wrf
-GFS_DIR=$SUDAN_HOME/gfs/
+SCRATCH=/scratch/wrf
+GFS_DIR=$SCRATCH/gfs/
 WPS_HOME=$SUDAN_HOME/prg/WPS
 WRF_HOME=$SUDAN_HOME/prg/WRF
 RESULT_DIR=$SUDAN_HOME/workdir/results
