@@ -67,7 +67,7 @@ press_levels = 100000, 97500, 95000, 92500, 90000, 85000, 70000, 60000, 50000, 3
 /
 
 &physics                
-mp_physics               = 14,
+mp_physics               = 6,
 ra_lw_physics            = 4,
 ra_sw_physics            = 4,
 radt                     = 30,
@@ -88,6 +88,9 @@ maxens                   = 3,
 maxens2                  = 3,
 maxens3                  = 16,
 ensdim                   = 144,
+lightning_option         = 3,
+lightning_dt             = 0,
+lightning_start_seconds  = 600,
 /
 
 &fdda                    

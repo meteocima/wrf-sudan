@@ -40,7 +40,6 @@ export LD_LIBRARY_PATH=$SHARE/lib:$LD_LIBRARY_PATH
 export PATH=$SHARE/bin:$PATH
 ulimit -s unlimited
 
-<< EOC
 log Simulation starting. 
 log '  ' \$DT_FORECAST=$DT_FORECAST
 
@@ -120,7 +119,6 @@ mpiexec -n 64 ./wrf.exe > wrf.log 2>&1
 
 cd $WRF_WORKDIR
 
-EOC
 function cdorun() {
    set +e
    err=1
@@ -136,7 +134,6 @@ function cdorun() {
 
 
 RH_EXPR="RH2=100*(PSFC*Q2/0.622)/(611.2*exp(17.67*(T2-273.15)/((T2-273.15)+243.5)))"
-RAINSUM_EXPR="RAINSUM=RAINNC+RAINC"
 
 rm -rf $RESULT_DIR
 mkdir -p $RESULT_DIR
@@ -162,14 +159,12 @@ log Regridding
 cdorun -O remapbil,$SHARE/cfg/cdo_wrfsudan_d01_grid.txt clean-sudan.nc rg-sudan.nc >> postprocess.log 2>&1
 
 log Calculating RH_EXPR
-cdorun -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RH_EXPR rg-sudan.nc rh-sudan.nc >> postprocess.log 2>&1
+#cdorun -O -setrtoc,100,1.e99,100 -setunit,"%" -expr,$RH_EXPR rg-sudan.nc rh-sudan.nc >> postprocess.log 2>&1
 cdorun -O -expr,$RH_EXPR rg-sudan.nc rh-sudan.nc >> postprocess.log 2>&1
 
-log Calculating RAINSUM_EXPR
-cdorun -O -expr,$RAINSUM_EXPR rg-sudan.nc rainsum-sudan.nc >> postprocess.log 2>&1
 
 log Merging new variables with main file
-cdorun -O -v -f nc4c -z zip9 merge rg-sudan.nc rainsum-sudan.nc rh-sudan.nc $RESULT_DIR/sudan-d01-${DT_BEG}UTC.nc >> postprocess.log 2>&1
+cdorun -O -v -f nc4c -z zip9 merge rg-sudan.nc rh-sudan.nc $RESULT_DIR/sudan-d01-${DT_BEG}UTC.nc >> postprocess.log 2>&1
 
 log Uploading to Dewetra
 
